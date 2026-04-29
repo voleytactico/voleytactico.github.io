@@ -389,32 +389,32 @@
             <div class="pos-number pos-5">5</div>
             <div class="pos-number pos-6">6</div>
             <div class="pos-number pos-1">1</div>
-            <div class="rotation-label" id="rotationLabel">4x2 simple · ataque | Armadoras cruzadas 2-5</div>
+            <div class="rotation-label" id="rotationLabel">4x2 simple · ataque | Armadores cruzadas 2-5</div>
           </div>
         </div>
       </div>
 
       <aside class="side-panel">
-        <h2>Editar jugadora seleccionada</h2>
-        <p class="small">Toca una jugadora y cambia el número, nombre o función. Los cambios quedan en la cancha.</p>
+        <h2>Editar jugador seleccionado</h2>
+        <p class="small">Toca un jugador y cambia el número, nombre o función. Los cambios quedan en la cancha.</p>
         <div class="player-editor">
           <input id="numInput" placeholder="Número" maxlength="3" />
           <input id="nameInput" placeholder="Nombre opcional" maxlength="18" />
           <select id="roleInput">
-            <option>Puntera</option>
+            <option>Puntero</option>
             <option>Central</option>
-            <option>Armadora</option>
-            <option>Opuesta</option>
+            <option>Armador</option>
+            <option>Opuesto</option>
             <option>Líbero</option>
             <option>Central/Líbero</option>
           </select>
-          <button id="updatePlayer">Actualizar jugadora</button>
+          <button id="updatePlayer">Actualizar jugador</button>
         </div>
         <div class="legend">
           <strong>Pizarra rápida</strong>
-          <span>• Funciona en el celular: arrastra tocando directamente a cada jugadora.</span>
-          <span>• Para mover la página, desliza el dedo sobre la cancha o el borde verde, evitando tocar una jugadora.</span>
-          <span>• “Rotar posición” gira las jugadoras en el sentido correcto de rotación: 1→6→5→4→3→2→1.</span>
+          <span>• Funciona en el celular: arrastra tocando directamente a cada jugador.</span>
+          <span>• Para mover la página, desliza el dedo sobre la cancha o el borde verde, evitando tocar una jugador.</span>
+          <span>• “Rotar posición” gira las jugadores en el sentido correcto de rotación: 1→6→5→4→3→2→1.</span>
           <span>• “Guardar diseño” permite poner un nombre y guardar la pizarra en la lista superior.</span>
           <span>• Los diseños guardados quedan solo en este dispositivo/navegador; otros usuarios no pueden verlos.</span>
           <span>• “Restablecer modelo” vuelve al modelo seleccionado en la lista de arriba.</span>
@@ -430,11 +430,11 @@
     const rotationLabel = document.getElementById('rotationLabel');
 
     const players = [
-      { id: 'p1', num: '1', role: 'Puntera', name: '', x: 82, y: 82 },
-      { id: 'p2', num: '2', role: 'Armadora', name: '', x: 82, y: 60 },
+      { id: 'p1', num: '1', role: 'Puntero', name: '', x: 82, y: 82 },
+      { id: 'p2', num: '2', role: 'Armador', name: '', x: 82, y: 60 },
       { id: 'p3', num: '3', role: 'Central', name: '', x: 50, y: 60 },
-      { id: 'p4', num: '4', role: 'Puntera', name: '', x: 18, y: 60 },
-      { id: 'p5', num: '5', role: 'Armadora', name: '', x: 18, y: 82 },
+      { id: 'p4', num: '4', role: 'Puntero', name: '', x: 18, y: 60 },
+      { id: 'p5', num: '5', role: 'Armador', name: '', x: 18, y: 82 },
       { id: 'p6', num: '6', role: 'Central/Líbero', name: '', x: 50, y: 82 }
     ];
 
@@ -443,49 +443,49 @@
     // - Línea de ataque inferior = nuestra zona delantera: 4 izquierda, 3 centro, 2 derecha.
     // - Línea inferior = nuestra zona zaguera: 5 izquierda, 6 centro, 1 derecha.
     // - Pares opuestos en la rotación: 1-4, 2-5, 3-6.
-    // - En 4x2 las dos armadoras quedan siempre cruzadas/opuestas.
-    // - En 5x1 hay una sola armadora y la opuesta queda cruzada con ella.
+    // - En 4x2 las dos armadores quedan siempre cruzadas/opuestos.
+    // - En 5x1 hay una sola armadora y la opuesto queda cruzada con ella.
     const presets = {
       '42simples-ataque': {
-        label: '4x2 simple · ataque | Armadoras cruzadas 2-5',
+        label: '4x2 simple · ataque | Armadores cruzadas 2-5',
         data: [
-          ['p4', 18, 60, 'Puntera'], ['p3', 50, 60, 'Central'], ['p2', 82, 60, 'Armadora'],
-          ['p5', 18, 82, 'Armadora'], ['p6', 50, 82, 'Central/Líbero'], ['p1', 82, 82, 'Puntera']
+          ['p4', 18, 60, 'Puntero'], ['p3', 50, 60, 'Central'], ['p2', 82, 60, 'Armador'],
+          ['p5', 18, 82, 'Armador'], ['p6', 50, 82, 'Central/Líbero'], ['p1', 82, 82, 'Puntero']
         ]
       },
       '42simples-defesa': {
-        label: '4x2 simple · defensa | Armadoras cruzadas 2-5',
+        label: '4x2 simple · defensa | Armadores cruzadas 2-5',
         data: [
-          ['p4', 13, 61, 'Puntera'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Armadora'],
-          ['p5', 13, 88, 'Armadora'], ['p6', 50, 90, 'Central/Líbero'], ['p1', 86, 88, 'Puntera']
+          ['p4', 13, 61, 'Puntero'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Armador'],
+          ['p5', 13, 88, 'Armador'], ['p6', 50, 90, 'Central/Líbero'], ['p1', 86, 88, 'Puntero']
         ]
       },
       '42infiltracao-ataque': {
-        label: '4x2 con infiltración · ataque | Armadoras cruzadas 1-4',
+        label: '4x2 con infiltración · ataque | Armadores cruzadas 1-4',
         data: [
-          ['p4', 18, 58, 'Armadora/Atacante'], ['p3', 50, 58, 'Central'], ['p2', 82, 58, 'Puntera'],
-          ['p5', 18, 84, 'Puntera'], ['p6', 50, 84, 'Central/Líbero'], ['p1', 72, 66, 'Armadora']
+          ['p4', 18, 58, 'Armador/Atacante'], ['p3', 50, 58, 'Central'], ['p2', 82, 58, 'Puntero'],
+          ['p5', 18, 84, 'Puntero'], ['p6', 50, 84, 'Central/Líbero'], ['p1', 72, 66, 'Armador']
         ]
       },
       '42infiltracao-defesa': {
-        label: '4x2 con infiltración · defensa | Armadoras cruzadas 1-4',
+        label: '4x2 con infiltración · defensa | Armadores cruzadas 1-4',
         data: [
-          ['p4', 13, 61, 'Armadora/Atacante'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Puntera'],
-          ['p5', 13, 88, 'Puntera'], ['p6', 50, 90, 'Central/Líbero'], ['p1', 86, 88, 'Armadora']
+          ['p4', 13, 61, 'Armador/Atacante'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Puntero'],
+          ['p5', 13, 88, 'Puntero'], ['p6', 50, 90, 'Central/Líbero'], ['p1', 86, 88, 'Armador']
         ]
       },
       '51-ataque': {
-        label: '5x1 · ataque | Armadora y opuesta cruzadas 1-4',
+        label: '5x1 · ataque | Armador y opuesto cruzadas 1-4',
         data: [
-          ['p4', 18, 58, 'Opuesta'], ['p3', 50, 58, 'Central'], ['p2', 82, 58, 'Puntera'],
-          ['p5', 18, 84, 'Puntera'], ['p6', 50, 84, 'Líbero'], ['p1', 72, 66, 'Armadora']
+          ['p4', 18, 58, 'Opuesto'], ['p3', 50, 58, 'Central'], ['p2', 82, 58, 'Puntero'],
+          ['p5', 18, 84, 'Puntero'], ['p6', 50, 84, 'Líbero'], ['p1', 72, 66, 'Armador']
         ]
       },
       '51-defesa': {
-        label: '5x1 · defensa | Armadora y opuesta cruzadas 1-4',
+        label: '5x1 · defensa | Armador y opuesto cruzadas 1-4',
         data: [
-          ['p4', 13, 61, 'Opuesta'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Puntera'],
-          ['p5', 13, 88, 'Puntera'], ['p6', 50, 90, 'Líbero'], ['p1', 86, 88, 'Armadora']
+          ['p4', 13, 61, 'Opuesto'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Puntero'],
+          ['p5', 13, 88, 'Puntero'], ['p6', 50, 90, 'Líbero'], ['p1', 86, 88, 'Armador']
         ]
       }
     };
@@ -689,7 +689,7 @@
 
     document.getElementById('resetBtn').addEventListener('click', () => {
       // Restablece el modelo que está seleccionado en la lista superior.
-      // No borra el diseño guardado; solo vuelve a colocar las jugadoras
+      // No borra el diseño guardado; solo vuelve a colocar las jugadores
       // en las posiciones base del sistema elegido.
       applyPreset(presetSelect.value);
       alert('Modelo restablecido según la opción seleccionada.');
