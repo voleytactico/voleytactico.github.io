@@ -331,7 +331,7 @@
       body { padding: 8px; }
       .layout { grid-template-columns: 1fr; }
       .court { max-height: none; min-height: auto; }
-      .side-panel { order: -1; }
+      .side-panel { order: 2; }
       .control-row { gap: 7px; }
       button { flex: 1; }
     }
@@ -370,7 +370,6 @@
         <div class="control-row">
           <button class="secondary" id="rotateBtn">Rotar posición</button>
           <button class="secondary" id="saveBtn">Guardar diseño</button>
-          <button class="secondary" id="loadBtn">Cargar guardado</button>
           <button class="danger" id="resetBtn">Restablecer modelo</button>
         </div>
       </div>
@@ -414,7 +413,8 @@
           <strong>Pizarra rápida</strong>
           <span>• Funciona en el celular: arrastra con el dedo.</span>
           <span>• “Rotar posición” gira las jugadoras en el sentido correcto de rotación: 1→6→5→4→3→2→1.</span>
-          <span>• “Guardar diseño” guarda la posición en este dispositivo.</span>
+          <span>• “Guardar diseño” permite poner un nombre y guardar la pizarra en la lista superior.</span>
+          <span>• Los diseños guardados quedan solo en este dispositivo/navegador; otros usuarios no pueden verlos.</span>
           <span>• “Restablecer modelo” vuelve al modelo seleccionado en la lista de arriba.</span>
         </div>
       </aside>
@@ -550,6 +550,67 @@
       }
     }
 
+    function getSavedDesigns() {
+      try {
+        return JSON.parse(localStorage.getItem('volei-tablet-saved-designs') || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function setSavedDesigns(designs) {
+      localStorage.setItem('volei-tablet-saved-designs', JSON.stringify(designs));
+    }
+
+    function clonePlayers() {
+      return players.map(p => ({ ...p }));
+    }
+
+    function refreshPresetOptions(selectedValue) {
+      presetSelect.querySelectorAll('option[data-saved="true"], option[data-divider="true"]').forEach(option => option.remove());
+      const designs = getSavedDesigns();
+      if (designs.length) {
+        const divider = document.createElement('option');
+        divider.disabled = true;
+        divider.dataset.divider = 'true';
+        divider.textContent = '──────── Diseños guardados ────────';
+        presetSelect.appendChild(divider);
+
+        designs.forEach(design => {
+          const option = document.createElement('option');
+          option.value = 'saved:' + design.id;
+          option.dataset.saved = 'true';
+          option.textContent = 'Guardado · ' + design.name;
+          presetSelect.appendChild(option);
+        });
+      }
+      if (selectedValue) presetSelect.value = selectedValue;
+    }
+
+    function loadSavedDesign(id) {
+      const design = getSavedDesigns().find(item => item.id === id);
+      if (!design) {
+        alert('No se encontró este diseño guardado.');
+        refreshPresetOptions();
+        return;
+      }
+      design.players.forEach(savedPlayer => {
+        const p = playerById(savedPlayer.id);
+        if (p) Object.assign(p, savedPlayer);
+      });
+      rotationLabel.textContent = design.label || design.name;
+      renderPlayers();
+    }
+
+    function applySelectedOption() {
+      const value = presetSelect.value;
+      if (value.startsWith('saved:')) {
+        loadSavedDesign(value.replace('saved:', ''));
+      } else {
+        applyPreset(value);
+      }
+    }
+
     function applyPreset(key) {
       const preset = presets[key];
       if (!preset) return;
@@ -591,8 +652,8 @@
       document.getElementById('roleInput').value = p.role;
     }
 
-    document.getElementById('applyPreset').addEventListener('click', () => applyPreset(presetSelect.value));
-    presetSelect.addEventListener('change', () => applyPreset(presetSelect.value));
+    document.getElementById('applyPreset').addEventListener('click', applySelectedOption);
+    presetSelect.addEventListener('change', applySelectedOption);
     document.getElementById('rotateBtn').addEventListener('click', rotatePositions);
 
     document.getElementById('updatePlayer').addEventListener('click', () => {
@@ -604,24 +665,24 @@
     });
 
     document.getElementById('saveBtn').addEventListener('click', () => {
-      localStorage.setItem('volei-tablet-layout', JSON.stringify({ players, label: rotationLabel.textContent }));
-      alert('Diseño guardado en este dispositivo.');
-    });
+      const baseName = rotationLabel.textContent.split('|')[0].trim() || 'Diseño personalizado';
+      const name = prompt('Nombre del diseño:', baseName);
+      if (!name || !name.trim()) return;
 
-    document.getElementById('loadBtn').addEventListener('click', () => {
-      const saved = localStorage.getItem('volei-tablet-layout');
-      if (!saved) return alert('No hay ningún diseño guardado en este dispositivo.');
-      try {
-        const data = JSON.parse(saved);
-        data.players.forEach(savedPlayer => {
-          const p = playerById(savedPlayer.id);
-          if (p) Object.assign(p, savedPlayer);
-        });
-        rotationLabel.textContent = data.label || 'Diseño guardado';
-        renderPlayers();
-      } catch {
-        alert('No fue posible cargar el diseño guardado.');
-      }
+      const designs = getSavedDesigns();
+      const id = 'd-' + Date.now();
+      const design = {
+        id,
+        name: name.trim(),
+        label: name.trim(),
+        players: clonePlayers()
+      };
+
+      designs.push(design);
+      setSavedDesigns(designs);
+      refreshPresetOptions('saved:' + id);
+      rotationLabel.textContent = design.name;
+      alert('Diseño guardado en la lista superior.');
     });
 
     document.getElementById('resetBtn').addEventListener('click', () => {
@@ -632,6 +693,7 @@
       alert('Modelo restablecido según la opción seleccionada.');
     });
 
+    refreshPresetOptions();
     renderPlayers();
   </script>
 </body>
