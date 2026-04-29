@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Pizarra Táctica de Vóleibol</title>
+  <style>
+    :root {
+      --bg: #071d33;
+      --panel: #102b46;
+      --panel-2: #163a5c;
+      --court: #ff8814;
+      --court-line: #f6f0df;
+      --free: #54b864;
+      --text: #ffffff;
+      --muted: #b8c7d6;
+      --accent: #ffd166;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(circle at top, #12375a 0%, var(--bg) 58%);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      overscroll-behavior: none;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px;
+      gap: 12px;
+    }
+
+    .app {
+      width: min(100%, 980px);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .topbar {
+      background: rgba(16, 43, 70, 0.92);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+    }
+
+    h1 {
+      font-size: clamp(22px, 6vw, 34px);
+      margin: 0 0 4px;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      margin-bottom: 8px;
+      background: rgba(255, 209, 102, .14);
+      color: #ffd166;
+      border: 1px solid rgba(255, 209, 102, .34);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #ffd166;
+      box-shadow: 0 0 0 4px rgba(255, 209, 102, .16);
+    }
+
+    .group-name {
+      margin-top: 8px;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 750;
+      opacity: .92;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select, button, input {
+      font: inherit;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-height: 42px;
+    }
+
+    select, input {
+      background: #f7fbff;
+      color: #102033;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    button {
+      background: var(--accent);
+      color: #1b1b1b;
+      font-weight: 750;
+      cursor: pointer;
+      box-shadow: 0 5px 14px rgba(0,0,0,.18);
+      touch-action: manipulation;
+    }
+
+    button.secondary {
+      background: var(--panel-2);
+      color: white;
+      border: 1px solid rgba(255,255,255,.14);
+    }
+
+    button.danger {
+      background: #ff6b6b;
+      color: white;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 600px) 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .court-wrap {
+      background: rgba(16, 43, 70, 0.75);
+      border-radius: 22px;
+      padding: 12px;
+      box-shadow: 0 14px 34px rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .court {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      max-height: calc(100vh - 230px);
+      min-height: 520px;
+      margin: 0 auto;
+      background: var(--free);
+      border-radius: 4px;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .play-area {
+      position: absolute;
+      left: 8%;
+      top: 6%;
+      width: 84%;
+      height: 88%;
+      background: var(--court);
+      border: 3px solid var(--court-line);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);
+    }
+
+    .line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--court-line);
+      opacity: .95;
+    }
+
+    .line.net { top: 50%; }
+    .line.attack-top { top: 32%; }
+    .line.attack-bottom { top: 68%; }
+
+    .pos-number {
+      position: absolute;
+      color: rgba(255,255,255,.78);
+      font-size: clamp(15px, 3.5vw, 24px);
+      font-weight: 800;
+      text-shadow: 0 1px 2px rgba(0,0,0,.2);
+      pointer-events: none;
+    }
+
+    .pos-4 { left: 12%; top: 53%; }
+    .pos-3 { left: 49%; top: 53%; }
+    .pos-2 { left: 82%; top: 53%; }
+    .pos-5 { left: 12%; top: 89%; }
+    .pos-6 { left: 49%; top: 89%; }
+    .pos-1 { left: 82%; top: 89%; }
+
+    .player {
+      --x: 50%;
+      --y: 50%;
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      transform: translate(-50%, -50%);
+      width: clamp(62px, 15vw, 92px);
+      min-height: 72px;
+      display: grid;
+      place-items: center;
+      gap: 1px;
+      cursor: grab;
+      touch-action: none;
+      z-index: 20;
+      filter: drop-shadow(0 7px 9px rgba(0,0,0,.25));
+    }
+
+    .player:active { cursor: grabbing; }
+    .player.selected .badge { outline: 4px solid rgba(255,209,102,.65); }
+
+    .badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #111;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      border: 3px solid #fff;
+      position: relative;
+    }
+
+    .badge::after {
+      content: "";
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: white;
+      right: -6px;
+      top: 3px;
+      border: 2px solid #111;
+    }
+
+    .role {
+      text-align: center;
+      color: #101010;
+      font-size: clamp(11px, 2.8vw, 15px);
+      font-weight: 850;
+      line-height: 1.05;
+      background: rgba(255,255,255,.76);
+      border-radius: 9px;
+      padding: 3px 6px;
+      max-width: 92px;
+    }
+
+    .rotation-label {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(7, 29, 51, .75);
+      color: white;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 800;
+      z-index: 15;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .side-panel {
+      background: rgba(16, 43, 70, 0.92);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25);
+    }
+
+    .side-panel h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .player-editor {
+      display: grid;
+      gap: 8px;
+      background: rgba(255,255,255,.06);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .legend {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 820px) {
+      body { padding: 8px; }
+      .layout { grid-template-columns: 1fr; }
+      .court { max-height: none; min-height: auto; }
+      .side-panel { order: -1; }
+      .control-row { gap: 7px; }
+      button { flex: 1; }
+    }
+
+    @media (max-width: 420px) {
+      .court-wrap { padding: 7px; border-radius: 16px; }
+      .player { width: 64px; }
+      .badge { width: 38px; height: 38px; }
+      .role { font-size: 11px; }
+      select, button, input { min-height: 40px; padding: 9px 10px; }
+    }
+
+    @media (display-mode: standalone) {
+      body { padding-top: env(safe-area-inset-top); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="topbar">
+      <div class="brand"><span class="brand-dot"></span> Voleibol Apoderados Chicureo</div>
+      <h1>Pizarra Táctica de Vóleibol</h1>
+      <p class="subtitle">Herramienta de apoyo para organizar posiciones, rotaciones, ataque y defensa en la cancha.</p>
+      <div class="controls">
+        <div class="control-row">
+          <select id="presetSelect" aria-label="Seleccionar sistema táctico">
+            <option value="42simples-ataque">4x2 simple · ataque</option>
+            <option value="42simples-defesa">4x2 simple · defensa</option>
+            <option value="42infiltracao-ataque">4x2 con infiltración · ataque</option>
+            <option value="42infiltracao-defesa">4x2 con infiltración · defensa</option>
+            <option value="51-ataque">5x1 · ataque</option>
+            <option value="51-defesa">5x1 · defensa</option>
+          </select>
+          <button id="applyPreset">Aplicar posición</button>
+        </div>
+        <div class="control-row">
+          <button class="secondary" id="rotateBtn">Rotar posición</button>
+          <button class="secondary" id="saveBtn">Guardar diseño</button>
+          <button class="secondary" id="loadBtn">Cargar guardado</button>
+          <button class="danger" id="resetBtn">Restablecer modelo</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="court-wrap">
+        <div class="court" id="court">
+          <div class="play-area" id="playArea">
+            <div class="line attack-top"></div>
+            <div class="line net"></div>
+            <div class="line attack-bottom"></div>
+            <div class="pos-number pos-4">4</div>
+            <div class="pos-number pos-3">3</div>
+            <div class="pos-number pos-2">2</div>
+            <div class="pos-number pos-5">5</div>
+            <div class="pos-number pos-6">6</div>
+            <div class="pos-number pos-1">1</div>
+            <div class="rotation-label" id="rotationLabel">4x2 simple · ataque | Armadoras cruzadas 2-5</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side-panel">
+        <h2>Editar jugadora seleccionada</h2>
+        <p class="small">Toca una jugadora y cambia el número, nombre o función. Los cambios quedan en la cancha.</p>
+        <div class="player-editor">
+          <input id="numInput" placeholder="Número" maxlength="3" />
+          <input id="nameInput" placeholder="Nombre opcional" maxlength="18" />
+          <select id="roleInput">
+            <option>Puntera</option>
+            <option>Central</option>
+            <option>Armadora</option>
+            <option>Opuesta</option>
+            <option>Líbero</option>
+            <option>Central/Líbero</option>
+          </select>
+          <button id="updatePlayer">Actualizar jugadora</button>
+        </div>
+        <div class="legend">
+          <strong>Pizarra rápida</strong>
+          <span>• Funciona en el celular: arrastra con el dedo.</span>
+          <span>• “Rotar posición” gira las jugadoras en el sentido correcto de rotación: 1→6→5→4→3→2→1.</span>
+          <span>• “Guardar diseño” guarda la posición en este dispositivo.</span>
+          <span>• “Restablecer modelo” vuelve al modelo seleccionado en la lista de arriba.</span>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const court = document.getElementById('court');
+    const playArea = document.getElementById('playArea');
+    const presetSelect = document.getElementById('presetSelect');
+    const rotationLabel = document.getElementById('rotationLabel');
+
+    const players = [
+      { id: 'p1', num: '1', role: 'Puntera', name: '', x: 82, y: 82 },
+      { id: 'p2', num: '2', role: 'Armadora', name: '', x: 82, y: 60 },
+      { id: 'p3', num: '3', role: 'Central', name: '', x: 50, y: 60 },
+      { id: 'p4', num: '4', role: 'Puntera', name: '', x: 18, y: 60 },
+      { id: 'p5', num: '5', role: 'Armadora', name: '', x: 18, y: 82 },
+      { id: 'p6', num: '6', role: 'Central/Líbero', name: '', x: 50, y: 82 }
+    ];
+
+    // Criterio usado:
+    // - Cancha mostrada desde el lado del propio equipo.
+    // - Línea de ataque inferior = nuestra zona delantera: 4 izquierda, 3 centro, 2 derecha.
+    // - Línea inferior = nuestra zona zaguera: 5 izquierda, 6 centro, 1 derecha.
+    // - Pares opuestos en la rotación: 1-4, 2-5, 3-6.
+    // - En 4x2 las dos armadoras quedan siempre cruzadas/opuestas.
+    // - En 5x1 hay una sola armadora y la opuesta queda cruzada con ella.
+    const presets = {
+      '42simples-ataque': {
+        label: '4x2 simple · ataque | Armadoras cruzadas 2-5',
+        data: [
+          ['p4', 18, 60, 'Puntera'], ['p3', 50, 60, 'Central'], ['p2', 82, 60, 'Armadora'],
+          ['p5', 18, 82, 'Armadora'], ['p6', 50, 82, 'Central/Líbero'], ['p1', 82, 82, 'Puntera']
+        ]
+      },
+      '42simples-defesa': {
+        label: '4x2 simple · defensa | Armadoras cruzadas 2-5',
+        data: [
+          ['p4', 13, 61, 'Puntera'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Armadora'],
+          ['p5', 13, 88, 'Armadora'], ['p6', 50, 90, 'Central/Líbero'], ['p1', 86, 88, 'Puntera']
+        ]
+      },
+      '42infiltracao-ataque': {
+        label: '4x2 con infiltración · ataque | Armadoras cruzadas 1-4',
+        data: [
+          ['p4', 18, 58, 'Armadora/Atacante'], ['p3', 50, 58, 'Central'], ['p2', 82, 58, 'Puntera'],
+          ['p5', 18, 84, 'Puntera'], ['p6', 50, 84, 'Central/Líbero'], ['p1', 72, 66, 'Armadora']
+        ]
+      },
+      '42infiltracao-defesa': {
+        label: '4x2 con infiltración · defensa | Armadoras cruzadas 1-4',
+        data: [
+          ['p4', 13, 61, 'Armadora/Atacante'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Puntera'],
+          ['p5', 13, 88, 'Puntera'], ['p6', 50, 90, 'Central/Líbero'], ['p1', 86, 88, 'Armadora']
+        ]
+      },
+      '51-ataque': {
+        label: '5x1 · ataque | Armadora y opuesta cruzadas 1-4',
+        data: [
+          ['p4', 18, 58, 'Opuesta'], ['p3', 50, 58, 'Central'], ['p2', 82, 58, 'Puntera'],
+          ['p5', 18, 84, 'Puntera'], ['p6', 50, 84, 'Líbero'], ['p1', 72, 66, 'Armadora']
+        ]
+      },
+      '51-defesa': {
+        label: '5x1 · defensa | Armadora y opuesta cruzadas 1-4',
+        data: [
+          ['p4', 13, 61, 'Opuesta'], ['p3', 50, 58, 'Central'], ['p2', 86, 62, 'Puntera'],
+          ['p5', 13, 88, 'Puntera'], ['p6', 50, 90, 'Líbero'], ['p1', 86, 88, 'Armadora']
+        ]
+      }
+    };
+
+    let selectedId = 'p1';
+    let drag = null;
+
+    function playerById(id) {
+      return players.find(p => p.id === id);
+    }
+
+    function renderPlayers() {
+      document.querySelectorAll('.player').forEach(el => el.remove());
+      players.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'player' + (p.id === selectedId ? ' selected' : '');
+        el.dataset.id = p.id;
+        el.style.setProperty('--x', p.x + '%');
+        el.style.setProperty('--y', p.y + '%');
+        const label = p.name ? `${p.role}<br><small>${p.name}</small>` : p.role;
+        el.innerHTML = `<div class="badge">${escapeHtml(p.num)}</div><div class="role">${label}</div>`;
+        playArea.appendChild(el);
+      });
+      attachDragEvents();
+      syncEditor();
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    }
+
+    function attachDragEvents() {
+      document.querySelectorAll('.player').forEach(el => {
+        el.addEventListener('pointerdown', e => {
+          selectedId = el.dataset.id;
+          renderPlayers();
+          const fresh = document.querySelector(`[data-id="${selectedId}"]`);
+          fresh.setPointerCapture(e.pointerId);
+          drag = { id: selectedId, pointerId: e.pointerId };
+          movePlayer(e.clientX, e.clientY);
+        });
+      });
+    }
+
+    window.addEventListener('pointermove', e => {
+      if (!drag) return;
+      movePlayer(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('pointerup', () => { drag = null; });
+    window.addEventListener('pointercancel', () => { drag = null; });
+
+    function movePlayer(clientX, clientY) {
+      const rect = playArea.getBoundingClientRect();
+      const x = ((clientX - rect.left) / rect.width) * 100;
+      const y = ((clientY - rect.top) / rect.height) * 100;
+      const p = playerById(drag.id);
+      p.x = Math.max(6, Math.min(94, x));
+      p.y = Math.max(5, Math.min(95, y));
+      const el = document.querySelector(`[data-id="${p.id}"]`);
+      if (el) {
+        el.style.setProperty('--x', p.x + '%');
+        el.style.setProperty('--y', p.y + '%');
+      }
+    }
+
+    function applyPreset(key) {
+      const preset = presets[key];
+      if (!preset) return;
+      preset.data.forEach(([id, x, y, role]) => {
+        const p = playerById(id);
+        p.x = x;
+        p.y = y;
+        p.role = role;
+      });
+      rotationLabel.textContent = preset.label;
+      renderPlayers();
+    }
+
+    function rotatePositions() {
+      // Rotación oficial del vóleibol vista desde nuestro lado de la cancha:
+      // 1 → 6 → 5 → 4 → 3 → 2 → 1.
+      // Es decir: quien está en 1 pasa a 6, quien está en 6 pasa a 5,
+      // quien está en 5 pasa a 4, quien está en 4 pasa a 3,
+      // quien está en 3 pasa a 2, y quien está en 2 pasa a 1.
+      const order = ['p1','p6','p5','p4','p3','p2'];
+      const coords = order.map(id => {
+        const p = playerById(id);
+        return { x: p.x, y: p.y };
+      });
+      order.forEach((id, index) => {
+        const p = playerById(id);
+        const from = coords[(index + 1) % coords.length];
+        p.x = from.x;
+        p.y = from.y;
+      });
+      renderPlayers();
+    }
+
+    function syncEditor() {
+      const p = playerById(selectedId);
+      if (!p) return;
+      document.getElementById('numInput').value = p.num;
+      document.getElementById('nameInput').value = p.name;
+      document.getElementById('roleInput').value = p.role;
+    }
+
+    document.getElementById('applyPreset').addEventListener('click', () => applyPreset(presetSelect.value));
+    presetSelect.addEventListener('change', () => applyPreset(presetSelect.value));
+    document.getElementById('rotateBtn').addEventListener('click', rotatePositions);
+
+    document.getElementById('updatePlayer').addEventListener('click', () => {
+      const p = playerById(selectedId);
+      p.num = document.getElementById('numInput').value.trim() || p.num;
+      p.name = document.getElementById('nameInput').value.trim();
+      p.role = document.getElementById('roleInput').value;
+      renderPlayers();
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      localStorage.setItem('volei-tablet-layout', JSON.stringify({ players, label: rotationLabel.textContent }));
+      alert('Diseño guardado en este dispositivo.');
+    });
+
+    document.getElementById('loadBtn').addEventListener('click', () => {
+      const saved = localStorage.getItem('volei-tablet-layout');
+      if (!saved) return alert('No hay ningún diseño guardado en este dispositivo.');
+      try {
+        const data = JSON.parse(saved);
+        data.players.forEach(savedPlayer => {
+          const p = playerById(savedPlayer.id);
+          if (p) Object.assign(p, savedPlayer);
+        });
+        rotationLabel.textContent = data.label || 'Diseño guardado';
+        renderPlayers();
+      } catch {
+        alert('No fue posible cargar el diseño guardado.');
+      }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      // Restablece el modelo que está seleccionado en la lista superior.
+      // No borra el diseño guardado; solo vuelve a colocar las jugadoras
+      // en las posiciones base del sistema elegido.
+      applyPreset(presetSelect.value);
+      alert('Modelo restablecido según la opción seleccionada.');
+    });
+
+    renderPlayers();
+  </script>
+</body>
+</html>
